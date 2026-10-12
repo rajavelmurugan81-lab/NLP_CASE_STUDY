@@ -1,0 +1,266 @@
+/* ==============================================================
+   Academic Research Dashboard Stylesheet
+   Project: Agentic AI for Automated Literature Review
+   Course: CSI4001 NLP and Computational Linguistics
+   ============================================================== */
+
+:root {
+    --primary-navy: #1a2a44;
+    --secondary-slate: #334e68;
+    --accent-blue: #0d6efd;
+    --light-bg: #f8fafc;
+    --card-border: #e2e8f0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--light-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navigation */
+.bg-navy {
+    background-color: var(--primary-navy) !important;
+}
+
+.letter-spacing-1 {
+    letter-spacing: 0.05rem;
+}
+
+.max-w-700 {
+    max-width: 700px;
+}
+
+.extra-small {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+/* Card Styling */
+.card {
+    border: 1px solid var(--card-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text-navy {
+    color: var(--primary-navy);
+}
+
+/* Status Card Indicator */
+.status-card {
+    background-color: #ffffff;
+    border-left: 4px solid #6c757d;
+}
+
+.status-card.status-healthy {
+    border-left-color: #198754;
+}
+
+.status-card.status-error {
+    border-left-color: #dc3545;
+}
+
+/* Input Group Polish */
+.input-group-lg > .form-control,
+.input-group-lg > .input-group-text,
+.input-group-lg > .btn {
+    border-radius: 0.5rem;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Paper Card Styling */
+.paper-card {
+    border-left: 4px solid #0d6efd !important;
+}
+
+.paper-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+.paper-title-link {
+    color: var(--primary-navy);
+    transition: color 0.15s ease;
+}
+
+.paper-title-link:hover {
+    color: var(--accent-blue);
+    text-decoration: underline !important;
+}
+
+.paper-abstract {
+    line-height: 1.55;
+    text-align: justify;
+}
+
+/* Passage Card Styling */
+.passage-card {
+    border-left: 4px solid #198754 !important;
+}
+
+.passage-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+.passage-text {
+    line-height: 1.6;
+    text-align: justify;
+}
+
+/* Tab Pills Enhancement */
+.nav-pills .nav-link {
+    color: var(--secondary-slate);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--primary-navy);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.max-w-100 {
+    max-width: 100%;
+}
+
+/* Footer Pinning */
+footer {
+    margin-top: auto;
+}
+
+/* Stepper Pills */
+.step-active {
+    background-color: var(--accent-blue) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.step-done {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+}
+
+/* Verification Claim Status Badges */
+.badge-supported {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #a3cfbb;
+}
+
+.badge-partially-supported {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffe69c;
+}
+
+.badge-unsupported {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.badge-conflicting {
+    background-color: #e2d9f3;
+    color: #432874;
+    border: 1px solid #cbb8e8;
+}
+
+/* Comparison Table Styling */
+#wf-matrix-table th {
+    background-color: #f1f5f9;
+    color: var(--primary-navy);
+    font-weight: 600;
+}
+
+#wf-matrix-table td {
+    vertical-align: top;
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+/* Rendered Report Markdown Styling */
+.report-rendered-content {
+    background-color: #ffffff;
+    line-height: 1.7;
+    font-size: 0.95rem;
+    color: #1e293b;
+    max-height: 650px;
+    overflow-y: auto;
+}
+
+.report-rendered-content h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.report-rendered-content h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--secondary-slate);
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.3rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.report-rendered-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.report-rendered-content p {
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.report-rendered-content ul, .report-rendered-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.report-rendered-content blockquote {
+    border-left: 4px solid var(--accent-blue);
+    padding-left: 1rem;
+    color: #475569;
+    font-style: italic;
+    background-color: #f8fafc;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin: 1rem 0;
+}
+
+.report-rendered-content table {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+}
+
+.report-rendered-content table th, .report-rendered-content table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.report-rendered-content code {
+    background-color: #f1f5f9;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    color: #b91c1c;
+}
+

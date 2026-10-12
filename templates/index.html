@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Literature Review AI - CSI4001 NLP</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-light">
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-navy shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#">
+                <i class="bi bi-journal-bookmark-fill text-warning"></i>
+                <span>LitReview<span class="text-warning">.AI</span></span>
+            </a>
+            <span class="badge bg-light text-dark px-3 py-2 rounded-pill font-monospace small">
+                CSI4001: NLP & Computational Linguistics
+            </span>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container my-5">
+        
+        <!-- Header Banner -->
+        <header class="text-center mb-4">
+            <span class="badge text-bg-primary px-3 py-2 rounded-pill text-uppercase fw-bold letter-spacing-1 mb-2">
+                College Research Project
+            </span>
+            <h1 class="display-6 fw-bold text-dark mt-2">
+                Agentic AI for Automated Literature Review Using LLMs and RAG
+            </h1>
+            <p class="text-muted mx-auto lead fs-6 max-w-700">
+                An intelligent multi-agent pipeline designed to automate literature search, academic PDF ingestion, semantic passage retrieval, and citation synthesis.
+            </p>
+        </header>
+
+        <!-- System Status Indicator Card -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-sm rounded-3 status-card p-3 d-flex flex-row align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div id="status-spinner" class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Checking server...</span>
+                        </div>
+                        <i id="status-icon" class="bi bi-circle-fill text-secondary d-none"></i>
+                        <div>
+                            <span class="fw-semibold text-secondary small d-block">Backend Server Status</span>
+                            <span id="status-text" class="fw-bold text-dark">Connecting to /api/health...</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="kb-stats-badge" class="badge bg-light text-dark border py-2 px-3 small font-monospace">
+                            FAISS Vectors: 0
+                        </span>
+                        <button id="btn-recheck-health" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-repeat me-1"></i> Re-check
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs: Literature Search vs RAG Knowledge Base -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-10">
+                <ul class="nav nav-pills nav-fill bg-white p-2 rounded-3 shadow-sm" id="dashboard-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-semibold" id="tab-search" data-bs-toggle="tab" data-bs-target="#pane-search" type="button" role="tab">
+                            <i class="bi bi-search me-2"></i>1. Literature Discovery (OpenAlex)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold" id="tab-rag" data-bs-toggle="tab" data-bs-target="#pane-rag" type="button" role="tab">
+                            <i class="bi bi-cpu-fill me-2"></i>2. RAG Knowledge Base & Hybrid Retrieval
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold" id="tab-workflow" data-bs-toggle="tab" data-bs-target="#pane-workflow" type="button" role="tab">
+                            <i class="bi bi-robot me-2"></i>3. Agentic Workflow & Review Synthesis
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="dashboard-tab-content">
+
+            <!-- PANE 1: OPENALEX SEARCH -->
+            <div class="tab-pane fade show active" id="pane-search" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                            <h5 class="card-title fw-bold text-navy mb-3">
+                                <i class="bi bi-search me-2 text-primary"></i>Initiate Literature Search
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Search OpenAlex's scholarly works repository to retrieve academic papers, reconstructed abstracts, DOIs, and Open Access PDFs.
+                            </p>
+
+                            <form id="search-form" onsubmit="return false;">
+                                <div class="mb-3">
+                                    <label for="topic-input" class="form-label fw-semibold text-secondary small">
+                                        Research Topic or Question
+                                    </label>
+                                    <div class="input-group input-group-lg shadow-sm">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">
+                                            <i class="bi bi-book"></i>
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            class="form-control border-start-0 ps-0" 
+                                            id="topic-input" 
+                                            placeholder="e.g., Retrieval-Augmented Generation for Clinical Question Answering" 
+                                            required
+                                        >
+                                        <select class="form-select flex-grow-0 w-auto bg-light border-start-0" id="limit-select" title="Result limit">
+                                            <option value="5">5 Papers</option>
+                                            <option value="10" selected>10 Papers</option>
+                                            <option value="15">15 Papers</option>
+                                            <option value="20">20 Papers</option>
+                                        </select>
+                                        <button class="btn btn-primary px-4 fw-semibold" type="submit" id="btn-search">
+                                            <i class="bi bi-search me-1"></i> Search Papers
+                                        </button>
+                                    </div>
+                                    <div class="form-text mt-2 text-muted">
+                                        Tip: Queries are searched across OpenAlex's 250M+ scholarly works repository.
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Alert message container -->
+                            <div id="search-alert" class="alert d-none mt-3 mb-0" role="alert"></div>
+                        </div>
+
+                        <!-- Search Results Container -->
+                        <div id="results-section" class="mt-4 d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0" id="results-title">Retrieved Scholarly Papers</h5>
+                                    <small class="text-muted" id="results-subtitle"></small>
+                                </div>
+                                <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-monospace small" id="results-badge">
+                                    OpenAlex API
+                                </span>
+                            </div>
+                            <div id="papers-list" class="d-flex flex-column gap-3">
+                                <!-- Dynamic paper cards -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANE 2: RAG KNOWLEDGE BASE & PDF PROCESSING -->
+            <div class="tab-pane fade" id="pane-rag" role="tabpanel">
+                <div class="row justify-content-center g-4">
+                    
+                    <!-- Section A: Upload & Ingest PDF -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                            <h5 class="card-title fw-bold text-navy mb-2">
+                                <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>Upload & Ingest Research PDFs
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Upload scholarly PDFs to extract page-by-page text via PyMuPDF, chunk content, generate SentenceTransformer embeddings, and index into FAISS.
+                            </p>
+
+                            <form id="upload-form" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="pdf-files-input" class="form-label fw-semibold text-secondary small">
+                                        Select Academic PDF File(s)
+                                    </label>
+                                    <input class="form-control" type="file" id="pdf-files-input" accept=".pdf" multiple required>
+                                    <div class="form-text text-muted extra-small mt-1">
+                                        Files are safely saved in <code>uploads/</code> and validated against corruption.
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-danger fw-semibold" type="button" id="btn-upload">
+                                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> 1. Upload to Server
+                                    </button>
+                                    <button class="btn btn-primary fw-semibold" type="button" id="btn-ingest" disabled>
+                                        <i class="bi bi-database-fill-add me-1"></i> 2. Ingest Uploaded PDF into FAISS
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="upload-alert" class="alert d-none mt-3 mb-0" role="alert"></div>
+
+                            <!-- Uploaded file selection display -->
+                            <div id="uploaded-files-box" class="mt-3 p-3 bg-light rounded-3 border d-none">
+                                <span class="fw-semibold small d-block mb-1 text-dark">Uploaded File Ready for Ingestion:</span>
+                                <span id="uploaded-filename-badge" class="badge text-bg-light border text-truncate max-w-100 d-inline-block"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section B: Semantic Evidence Retrieval -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                            <h5 class="card-title fw-bold text-navy mb-2">
+                                <i class="bi bi-search-heart-fill me-2 text-success"></i>Semantic Passage Retrieval
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Query the indexed knowledge base to retrieve the most relevant evidence passages with confidence scores, page numbers, and source attribution.
+                            </p>
+
+                            <form id="retrieve-form" onsubmit="return false;">
+                                <div class="mb-3">
+                                    <label for="rag-query-input" class="form-label fw-semibold text-secondary small">
+                                        Research Evidence Question
+                                    </label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="rag-query-input" 
+                                        rows="3" 
+                                        placeholder="e.g., What are the key evaluation findings of retrieval-augmented generation benchmarks?"
+                                        required
+                                    ></textarea>
+                                </div>
+                                <div class="row g-2 mb-3 align-items-end">
+                                    <div class="col-sm-5">
+                                        <label for="retrieval-mode-select" class="form-label text-secondary small mb-1 fw-semibold">Retrieval Method:</label>
+                                        <select class="form-select form-select-sm" id="retrieval-mode-select">
+                                            <option value="hybrid" selected>Hybrid (Dense + BM25 + Re-rank)</option>
+                                            <option value="dense">Dense Semantic (FAISS)</option>
+                                            <option value="bm25">Sparse Keyword (BM25)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label for="top-k-select" class="form-label text-secondary small mb-1 fw-semibold">Top K:</label>
+                                        <select class="form-select form-select-sm" id="top-k-select">
+                                            <option value="3">3 Passages</option>
+                                            <option value="5" selected>5 Passages</option>
+                                            <option value="10">10 Passages</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button class="btn btn-success btn-sm w-100 fw-semibold py-1" type="submit" id="btn-retrieve">
+                                            <i class="bi bi-search me-1"></i> Retrieve Evidence
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div id="retrieve-alert" class="alert d-none mt-2 mb-0" role="alert"></div>
+                        </div>
+                    </div>
+
+                    <!-- Retrieved Passages Container -->
+                    <div class="col-lg-10">
+                        <div id="passages-section" class="card border-0 shadow-sm rounded-4 p-4 bg-white d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <div>
+                                    <h5 class="fw-bold text-navy mb-0" id="passages-title">Retrieved Evidence Passages</h5>
+                                    <small class="text-muted" id="passages-subtitle"></small>
+                                </div>
+                                <span id="retrieval-mode-badge" class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill font-monospace small">
+                                    FAISS Inner Product (Cosine)
+                                </span>
+                            </div>
+                            <div id="passages-list" class="d-flex flex-column gap-3">
+                                <!-- Dynamic evidence passage cards will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PANE 3: AGENTIC WORKFLOW & REVIEW SYNTHESIS -->
+            <div class="tab-pane fade" id="pane-workflow" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-11">
+
+                        <!-- Workflow Configuration & Launch Card -->
+                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                <div>
+                                    <h5 class="card-title fw-bold text-navy mb-1">
+                                        <i class="bi bi-robot text-primary me-2"></i>Autonomous Multi-Agent Literature Review
+                                    </h5>
+                                    <p class="text-muted small mb-0">
+                                        Decompose research questions, retrieve scholarly literature, index hybrid vector/keyword stores, extract structured evidence, cluster themes, compare methodologies, uncover research gaps, verify claims, and synthesize a complete academic review.
+                                    </p>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span id="wf-llm-badge" class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill font-monospace small">
+                                        LLM: Checking...
+                                    </span>
+                                </div>
+                            </div>
+
+                            <form id="workflow-form" onsubmit="return false;">
+                                <div class="mb-3">
+                                    <label for="wf-question-input" class="form-label fw-semibold text-secondary small">
+                                        Overarching Research Question or Thesis Topic
+                                    </label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="wf-question-input" 
+                                        rows="3" 
+                                        placeholder="e.g., How do hybrid retrieval and agentic workflows improve factual consistency and reduce hallucinations in retrieval-augmented generation?"
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="wf-subtopics-input" class="form-label text-secondary small fw-semibold">Subtopics / Queries Budget:</label>
+                                        <input type="number" class="form-control form-control-sm" id="wf-subtopics-input" min="1" max="6" value="3">
+                                        <div class="form-text extra-small text-muted">Number of specialized search angles to plan.</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="wf-papers-input" class="form-label text-secondary small fw-semibold">Papers per Query:</label>
+                                        <input type="number" class="form-control form-control-sm" id="wf-papers-input" min="1" max="15" value="5">
+                                        <div class="form-text extra-small text-muted">Scholarly works to retrieve per subtopic.</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="wf-retries-input" class="form-label text-secondary small fw-semibold">Max Bounded Retries:</label>
+                                        <input type="number" class="form-control form-control-sm" id="wf-retries-input" min="0" max="3" value="2">
+                                        <div class="form-text extra-small text-muted">Iterative retry limit for insufficient evidence.</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">
+                                        <i class="bi bi-shield-check text-success me-1"></i> Bounded autonomous orchestration with heuristic fallback & factual verification.
+                                    </small>
+                                    <button class="btn btn-primary px-4 fw-semibold" type="submit" id="btn-run-workflow">
+                                        <i class="bi bi-play-circle-fill me-1"></i> Run Complete Literature Review
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Alert Box -->
+                            <div id="wf-alert" class="alert d-none mt-3 mb-0" role="alert"></div>
+                        </div>
+
+                        <!-- Live Pipeline Stage Tracker -->
+                        <div id="wf-progress-card" class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="spinner-border spinner-border-sm text-primary" id="wf-spinner" role="status"></div>
+                                    <strong class="text-navy small" id="wf-status-message">Orchestrating agent pipeline...</strong>
+                                </div>
+                                <span id="wf-retry-badge" class="badge bg-light text-secondary border font-monospace small">Retries: 0/2</span>
+                            </div>
+
+                            <!-- Stepper pills -->
+                            <div class="d-flex flex-wrap gap-2" id="wf-stepper-pills">
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-1"><i class="bi bi-1-circle me-1"></i>Planning</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-2"><i class="bi bi-2-circle me-1"></i>Retrieval</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-3"><i class="bi bi-3-circle me-1"></i>Ingestion</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-4"><i class="bi bi-4-circle me-1"></i>FAISS+BM25</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-5"><i class="bi bi-5-circle me-1"></i>Extraction</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-6"><i class="bi bi-6-circle me-1"></i>Clustering</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-7"><i class="bi bi-7-circle me-1"></i>Comparison</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-8"><i class="bi bi-8-circle me-1"></i>Gap Analysis</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-9"><i class="bi bi-9-circle me-1"></i>Verification</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-10"><i class="bi bi-10-circle me-1"></i>Synthesis</span>
+                                <span class="badge bg-light text-muted border p-2" id="step-pill-11"><i class="bi bi-check-circle me-1"></i>Complete</span>
+                            </div>
+                        </div>
+
+                        <!-- Workflow Results Container -->
+                        <div id="wf-results-container" class="card border-0 shadow-sm rounded-4 p-4 bg-white d-none">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-3 mb-3">
+                                <div>
+                                    <h5 class="fw-bold text-navy mb-0">Literature Review Synthesis & Agent Artifacts</h5>
+                                    <small class="text-muted" id="wf-summary-meta">Completed review synthesis across retrieved papers</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a id="btn-export-report" href="/api/report/export" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-download"></i> Download Review (.md)
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Inner Tabs for Synthesis Artifacts -->
+                            <ul class="nav nav-tabs mb-4" id="wf-result-tabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active fw-semibold small" id="subtab-report" data-bs-toggle="tab" data-bs-target="#subpane-report" type="button" role="tab">
+                                        <i class="bi bi-journal-text me-1 text-primary"></i>Literature Review Report
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold small" id="subtab-matrix" data-bs-toggle="tab" data-bs-target="#subpane-matrix" type="button" role="tab">
+                                        <i class="bi bi-table me-1 text-success"></i>Comparison Matrix
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold small" id="subtab-clusters" data-bs-toggle="tab" data-bs-target="#subpane-clusters" type="button" role="tab">
+                                        <i class="bi bi-pie-chart-fill me-1 text-info"></i>Thematic Clusters
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold small" id="subtab-gaps" data-bs-toggle="tab" data-bs-target="#subpane-gaps" type="button" role="tab">
+                                        <i class="bi bi-lightbulb-fill me-1 text-warning"></i>Research Gaps
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold small" id="subtab-verification" data-bs-toggle="tab" data-bs-target="#subpane-verification" type="button" role="tab">
+                                        <i class="bi bi-patch-check-fill me-1 text-danger"></i>Verification Audit
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fw-semibold small" id="subtab-plan" data-bs-toggle="tab" data-bs-target="#subpane-plan" type="button" role="tab">
+                                        <i class="bi bi-diagram-3 me-1 text-secondary"></i>Execution Plan
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="wf-result-tab-content">
+
+                                <!-- Subpane 1: Review Report -->
+                                <div class="tab-pane fade show active" id="subpane-report" role="tabpanel">
+                                    <div class="p-3 bg-light rounded-3 border mb-3 d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="fw-semibold small d-block" id="wf-report-title">Automated Literature Review</span>
+                                            <span class="text-muted extra-small" id="wf-report-stats">Generated with inline grounded citations</span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-secondary" id="btn-copy-report">
+                                            <i class="bi bi-clipboard me-1"></i> Copy Markdown
+                                        </button>
+                                    </div>
+                                    <div class="p-4 bg-white rounded-3 border report-rendered-content" id="wf-report-rendered">
+                                        <!-- Rendered Markdown Review -->
+                                    </div>
+                                </div>
+
+                                <!-- Subpane 2: Comparison Matrix -->
+                                <div class="tab-pane fade" id="subpane-matrix" role="tabpanel">
+                                    <p class="text-muted small mb-3">
+                                        Cross-paper structured comparison matrix generated across 8 scientific dimensions:
+                                    </p>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered small align-middle" id="wf-matrix-table">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="min-width: 140px;">Paper & Year</th>
+                                                    <th style="min-width: 160px;">Research Objective</th>
+                                                    <th style="min-width: 150px;">Methodology</th>
+                                                    <th style="min-width: 130px;">Dataset</th>
+                                                    <th style="min-width: 130px;">Model / Arch</th>
+                                                    <th style="min-width: 130px;">Metrics</th>
+                                                    <th style="min-width: 170px;">Key Findings</th>
+                                                    <th style="min-width: 170px;">Limitations</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="wf-matrix-tbody">
+                                                <!-- Dynamic comparison matrix rows -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Subpane 3: Thematic Clusters -->
+                                <div class="tab-pane fade" id="subpane-clusters" role="tabpanel">
+                                    <p class="text-muted small mb-3">
+                                        Unsupervised dense KMeans clustering with grounded descriptive labels:
+                                    </p>
+                                    <div class="row g-3" id="wf-clusters-container">
+                                        <!-- Dynamic cluster cards -->
+                                    </div>
+                                </div>
+
+                                <!-- Subpane 4: Research Gaps -->
+                                <div class="tab-pane fade" id="subpane-gaps" role="tabpanel">
+                                    <p class="text-muted small mb-3">
+                                        Systematically identified gaps, methodological shortcomings, and future research opportunities:
+                                    </p>
+                                    <div class="d-flex flex-column gap-3" id="wf-gaps-container">
+                                        <!-- Dynamic research gap cards -->
+                                    </div>
+                                </div>
+
+                                <!-- Subpane 5: Verification Audit -->
+                                <div class="tab-pane fade" id="subpane-verification" role="tabpanel">
+                                    <p class="text-muted small mb-3">
+                                        Citation & factual support audit verifying claims against source retrieved passages:
+                                    </p>
+                                    <div class="d-flex flex-column gap-3" id="wf-verification-container">
+                                        <!-- Dynamic verification cards -->
+                                    </div>
+                                </div>
+
+                                <!-- Subpane 6: Execution Plan -->
+                                <div class="tab-pane fade" id="subpane-plan" role="tabpanel">
+                                    <p class="text-muted small mb-3">
+                                        Planning Agent decomposition, subtopic criteria, and execution metadata:
+                                    </p>
+                                    <div id="wf-plan-container">
+                                        <!-- Dynamic plan items -->
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Architecture & Pipeline Blueprint (Static College Project Context) -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <h6 class="fw-bold text-uppercase text-secondary small letter-spacing-1 mb-3">
+                        <i class="bi bi-diagram-3-fill me-2 text-primary"></i>System Architecture Blueprint (Complete Multi-Agent System)
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-diagram-2 text-primary fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-primary">1. Planning</span>
+                                <span class="text-muted extra-small">Question decomposition & bounded retries</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-cloud-arrow-down text-primary fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-primary">2. Discovery</span>
+                                <span class="text-muted extra-small">OpenAlex search & citation graph</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-database-fill-gear text-success fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-success">3. Hybrid RAG</span>
+                                <span class="text-muted extra-small">PyMuPDF, FAISS + BM25, RRF k=60</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-card-checklist text-info fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-info">4. Extraction</span>
+                                <span class="text-muted extra-small">8-field schema & dense KMeans</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-table text-warning fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-warning">5. Reasoning</span>
+                                <span class="text-muted extra-small">Matrix synthesis & gap discovery</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="p-3 rounded-3 bg-light border text-center h-100">
+                                <i class="bi bi-patch-check text-danger fs-4 d-block mb-1"></i>
+                                <span class="fw-semibold extra-small d-block text-danger">6. Review Synthesis</span>
+                                <span class="text-muted extra-small">Claim audit & verified Markdown review</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-success mt-3 mb-0 py-2 small d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span><strong>Milestone 4 Active:</strong> Complete multi-agent pipeline operational with hybrid retrieval, evidence extraction, comparative matrix, gap discovery, citation verification, and automated literature synthesis.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-muted small border-top bg-white mt-auto">
+        <div class="container">
+            <p class="mb-0">
+                Department of Computer Science & Engineering &bull; CSI4001 Natural Language Processing and Computational Linguistics
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

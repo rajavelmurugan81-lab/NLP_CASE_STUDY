@@ -1,0 +1,34 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual environment folders
+venv/
+.venv/
+env/
+ENV/
+
+# Environment files and credentials
+.env
+*.env.local
+
+# SQLite Database files
+database/*.db
+*.sqlite3
+
+# Runtime user uploads, vector indices, and generated reports
+uploads/*
+!uploads/.gitkeep
+vector_data/*
+!vector_data/.gitkeep
+generated_reports/*
+!generated_reports/.gitkeep
+
+# IDE and Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
